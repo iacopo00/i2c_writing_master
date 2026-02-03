@@ -1,0 +1,27 @@
+# --- Vivado (Xilinx) ---
+*.jou
+*.log
+*.pb
+*.wdb
+*.str
+*.os
+.Xil/
+.hbs/
+hd_visual/
+*.xpr
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+
+# --- ModelSim / QuestaSim ---
+transcript
+*.wlf
+work/
+covhtmlreport/
+vsim.wlf
+
+# --- Temporary system files ---
+.DS_Store
+*~
