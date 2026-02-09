@@ -31,6 +31,7 @@ architecture structure of WritingMaster is
     signal addr_signal :  std_logic_vector(6 downto 0);     -- set to addr when valid is '1'
     signal data_signal :  std_logic_vector(7 downto 0);     -- set to data when valid is '1'
 
+    -- 1. State memory update
     p_STATE_REG: process(clk, reset)
     begin
         if reset = '0' then
@@ -56,7 +57,8 @@ architecture structure of WritingMaster is
             end case;
         end if;
     end process;
-
+    
+    -- 2. Next state logic process
     p_NEXT_STATE_LOGIC: process(curr_state)
         variable count : integer;
     begin
@@ -68,11 +70,24 @@ architecture structure of WritingMaster is
             when START =>
                 next_state <= ADDR;
             when ADDR =>
+                if (count = 9) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
+                    next_state <= DATA;
+                elsif (count != 9) then
+                    next_state <= curr_state;
+                else
+                    -- NACK received, no availabel slave at addr
+                    next_state <= STOP;
+                end if;
+        end case;
+
+
                 
                 
     end process;
-
+    
+    -- 3. Output logic
     p_OUTPUT_LOGIC: process(curr_state)
+    variable byte_sent : integer;
     begin
         -- default ('0' with counter < 16)
         scl <= scl_count(4);
@@ -84,6 +99,18 @@ architecture structure of WritingMaster is
             when START =>       -- send start bit (sda = 0 and scl = 1)
                 scl <= '1';
                 sda <= '0';
+            when ADDR =>
+                if (byte_sent < 7) and (scl = '1') then
+                    sda <= addr(byte_sent);
+                    byte_sent := byte_sent + 1;
+                elsif byte_sent >= 7 then
+                    sda <= 'z';                         -- free sda to receive ACK
+                    scl <= '0';
+                    byte_sent := 0;
+                else
+                    sda <= sda;
+                end if;
+        end case;
     end process;
 
 end architecture;
