@@ -28,6 +28,7 @@ architecture structure of WritingMaster is
     type state_t is (IDLE, START, ADDR, DATA, STOP);
     signal curr_state, next_state : state_t;
     signal scl_count :  unsigned(4 downto 0);               -- counter to set scl to '0' or '1' (32 times slowe than clk)
+    signal byte_sent :  unsigned;
     signal addr_signal :  std_logic_vector(6 downto 0);     -- set to addr when valid is '1'
     signal data_signal :  std_logic_vector(7 downto 0);     -- set to data when valid is '1'
 
@@ -38,6 +39,7 @@ architecture structure of WritingMaster is
             -- initial state
             curr_state <= IDLE;
             scl_count <= (others => '0');
+            byte_sent <= 7;
         elsif rising_edge(clk) then
             -- device clock is 32 times slower than clock, except for IDLE state
             case next_state is
@@ -60,7 +62,6 @@ architecture structure of WritingMaster is
     
     -- 2. Next state logic process
     p_NEXT_STATE_LOGIC: process(curr_state)
-        variable count : integer;
     begin
         -- default
         next_state <= curr_state;
@@ -70,16 +71,16 @@ architecture structure of WritingMaster is
             when START =>
                 next_state <= ADDR;
             when ADDR =>
-                if (count = 7) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
+                if (byte_sent = 7) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
                     next_state <= DATA;
-                elsif (count != 7) then
+                elsif (byte_sent != 7) then
                     next_state <= curr_state;
                 else
                     -- NACK received, no availabel slave at addr
                     next_state <= STOP;
                 end if;
             when DATA => 
-                if (count = 8) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
+                if (byte_sent = 8) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
                     next_state <= STOP;
                 else
                     next_state <= curr_state;
@@ -110,11 +111,11 @@ architecture structure of WritingMaster is
             when ADDR =>
                 if (byte_sent < 7) and (scl = '1') then
                     sda <= addr(byte_sent);
-                    byte_sent := byte_sent + 1;
+                    byte_sent <= byte_sent + 1;
                 elsif byte_sent >= 7 then
                     sda <= 'Z';                        -- free sda to receive ACK
                     scl <= '0';
-                    byte_sent := 0;
+                    byte_sent <= 0;
                 else
                     sda <= sda;
                 end if;
