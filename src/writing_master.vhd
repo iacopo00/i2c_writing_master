@@ -70,13 +70,19 @@ architecture structure of WritingMaster is
             when START =>
                 next_state <= ADDR;
             when ADDR =>
-                if (count = 9) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
+                if (count = 7) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
                     next_state <= DATA;
-                elsif (count != 9) then
+                elsif (count != 7) then
                     next_state <= curr_state;
                 else
                     -- NACK received, no availabel slave at addr
                     next_state <= STOP;
+                end if;
+            when DATA => 
+                if (count = 8) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
+                    next_state <= STOP;
+                else
+                    next_state <= curr_state;
                 end if;
         end case;
 
@@ -109,6 +115,23 @@ architecture structure of WritingMaster is
                     byte_sent := 0;
                 else
                     sda <= sda;
+                end if;
+            when DATA =>
+                if byte_sent < 8 then
+                    case scl is 
+                        when '1' => 
+                            sda <= data(byte_sent);
+                            byte_sent <= byte_sent + 1;
+                        when '0' =>
+                            sda <= sda;
+                    end case;
+                else
+                    if (scl = '0') and (sda = '0') then     -- ACK received
+                        byte_sent := 0;
+                    else
+                        sda <= 'z';                         -- free sda to receive ACK
+                        scl <= '0';
+                    end if;
                 end if;
         end case;
     end process;
