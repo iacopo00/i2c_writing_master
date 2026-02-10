@@ -84,6 +84,8 @@ architecture structure of WritingMaster is
                 else
                     next_state <= curr_state;
                 end if;
+            when STOP =>
+                next_state <= IDLE;
         end case;
 
 
@@ -133,6 +135,9 @@ architecture structure of WritingMaster is
                         scl <= '0';
                     end if;
                 end if;
+            when STOP =>
+                scl <= '1';
+                sda <= '1';
         end case;
     end process;
 
