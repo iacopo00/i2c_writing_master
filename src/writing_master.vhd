@@ -18,7 +18,7 @@ entity WritingMaster is
         addr : in std_logic_vector(6 downto 0);     -- slave's address
         data : in std_logic_vector(7 downto 0);     -- writing data
         valid : in std_logic;                       -- input validity signal ('1' or '0')
-        sda : out std_logic;                        -- data line for serial communication between master and slave
+        sda : inout std_logic;                    -- data line for serial communication between master and slave
         scl : out std_logic                         -- device clock line
     );
 end entity
@@ -112,7 +112,7 @@ architecture structure of WritingMaster is
                     sda <= addr(byte_sent);
                     byte_sent := byte_sent + 1;
                 elsif byte_sent >= 7 then
-                    sda <= 'z';                         -- free sda to receive ACK
+                    sda <= 'Z';                        -- free sda to receive ACK
                     scl <= '0';
                     byte_sent := 0;
                 else
@@ -131,7 +131,7 @@ architecture structure of WritingMaster is
                     if (scl = '0') and (sda = '0') then     -- ACK received
                         byte_sent := 0;
                     else
-                        sda <= 'z';                         -- free sda to receive ACK
+                        sda <= 'Z';                         -- free sda to receive ACK
                         scl <= '0';
                     end if;
                 end if;
