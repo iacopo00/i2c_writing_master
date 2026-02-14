@@ -65,10 +65,12 @@ begin
                         addr_signal <= addr;
                         data_signal <= data;
                     end if;
-                when ADDR =>
+                when ADDR | DATA =>
                     if scl_count = 31 then
                         bit_count <= bit_count + 1;
                     end if;
+                when ACK_ADDR | ACK_DATA =>
+                    bit_count <= (others => '0');
             end case;
         end if;
     end process;
@@ -97,6 +99,18 @@ begin
                         next_state <= DATA;
                     else
                         next_state <= STOP;
+                    end if;
+                end if;
+            when DATA =>
+                if (scl_count = 31) and (bit_count = 7) then
+                    next_state <= ACK_DATA;
+                end if;
+            when ACK_DATA =>
+                if scl_count = 31 then
+                    if sda = '0' then
+                        next_state <= STOP;
+                    else
+                        next_state <= DATA;
                     end if;
                 end if;
     end process;
@@ -128,8 +142,10 @@ begin
                     -- send write (W) command
                     sda_signal <= '0';
                 end if;
-            when ACK_ADDR =>
+            when ACK_ADDR | ACK_DATA =>
                 sda_signal <= 'Z';
+            when DATA =>
+                sda_signal <= data(7 - to_integer(bit_count));
         end case;
     end process;
 
