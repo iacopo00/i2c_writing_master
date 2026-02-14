@@ -70,54 +70,37 @@ begin
     -- 2. Next state logic process
     p_NEXT_STATE_LOGIC: process(curr_state, valid, scl_count)
     begin
+        next_state <= curr_state;
+        case curr_state is
+            when IDLE =>
+                if valid = '1' then
+                    next_state <= START;
+                end if;
+            when START =>
+                if scl_count = 31 then
+                    next_state <= ADDR;
+                end if;
     end process;
     
     -- 3. Output logic
-    p_OUTPUT_LOGIC: process(curr_state)
+    p_OUTPUT_LOGIC: process(curr_state, scl_count)
     begin
-        -- default ('0' with counter < 16)
-        scl <= scl_count(4);
+        -- default ('0' with counter < 16, '1' >= 16)
+        scl_signal <= scl_count(4);
+        sda_signal <= '1';
 
         case curr_state is
             when IDLE =>
-                scl <= '1';
-                sda <= '1';     
-            when START =>       -- send start bit (sda = 0 and scl = 1)
-                scl <= '1';
-                sda <= '0';
-            when ADDR =>
-                if (byte_sent > 0) and (scl = '1') then
-                    if byte_sent = 1 then
-                        sda <= '0';                    -- writing command
-                    else
-                        sda <= addr(byte_sent - 1);
-                    byte_sent <= byte_sent - 1;
-                elsif byte_sent = 0 then
-                    sda <= 'Z';                        -- free sda to receive ACK
-                    scl <= '0';
+                scl_signal <= '1';
+                sda_signal <= '1';
+            when START =>
+                scl_signal <= '1';
+                if scl_count < 16 then
+                    sda_signal <= '1';
                 else
-                    sda <= sda;
+                    -- START signal with scl high and high to low transition of sda
+                    sda_signal <= '0';
                 end if;
-            when DATA =>
-                if byte_sent > 0 then
-                    case scl is 
-                        when '1' => 
-                            sda <= data(byte_sent - 1);
-                            byte_sent <= byte_sent - 1;
-                        when '0' =>
-                            sda <= sda;
-                    end case;
-                else
-                    if (scl = '0') and (sda = '0') then     -- ACK received
-                        byte_sent <= 7;
-                    else
-                        sda <= 'Z';                         -- free sda to receive ACK
-                        scl <= '0';
-                    end if;
-                end if;
-            when STOP =>
-                scl <= '1';
-                sda <= '1';
         end case;
     end process;
 
