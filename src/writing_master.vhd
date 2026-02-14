@@ -113,6 +113,10 @@ begin
                         next_state <= DATA;
                     end if;
                 end if;
+            when STOP => 
+                if scl_count = 31 then
+                    next_state <= IDLE;
+                end if;
     end process;
     
     -- 3. Output logic
@@ -146,6 +150,13 @@ begin
                 sda_signal <= 'Z';
             when DATA =>
                 sda_signal <= data(7 - to_integer(bit_count));
+            when STOP =>
+                -- wait a little more to avoid a new START transition 
+                if scl_count < 24 then
+                    sda_signal <= '0';
+                else
+                    -- STOP signal with scl high and low to high transition of sda
+                    sda_signal <= '1';
         end case;
     end process;
 
