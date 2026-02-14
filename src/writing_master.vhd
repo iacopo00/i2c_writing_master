@@ -18,7 +18,7 @@ entity WritingMaster is
         addr : in std_logic_vector(6 downto 0);     -- slave's address
         data : in std_logic_vector(7 downto 0);     -- writing data
         valid : in std_logic;                       -- input validity signal ('1' or '0')
-        sda : inout std_logic;                    -- data line for serial communication between master and slave
+        sda : inout std_logic;                      -- data line for serial communication between master and slave
         scl : out std_logic                         -- device clock line
     );
 end entity
@@ -28,9 +28,15 @@ architecture structure of WritingMaster is
     type state_t is (IDLE, START, ADDR, DATA, STOP);
     signal curr_state, next_state : state_t;
     signal scl_count :  unsigned(4 downto 0);               -- counter to set scl to '0' or '1' (32 times slowe than clk)
-    signal byte_sent :  unsigned;
+    signal bit_count :  unsigned(3 downto 0);               -- index of the next bit to send (MSB first), max 9 (8 bit data + ACK)
     signal addr_signal :  std_logic_vector(6 downto 0);     -- set to addr when valid is '1'
     signal data_signal :  std_logic_vector(7 downto 0);     -- set to data when valid is '1'
+    signal scl_signal : std_logic;                          -- used to read/set scl signal without error
+    signal sda_signal : std_logic;                          -- used to read/set sda signal without error
+
+begin
+    scl <= scl_signal;
+    sda <= sda_signal;
 
     -- 1. State memory update
     p_STATE_REG: process(clk, reset)
@@ -39,64 +45,35 @@ architecture structure of WritingMaster is
             -- initial state
             curr_state <= IDLE;
             scl_count <= (others => '0');
-            byte_sent <= 7;
+            bit_count <= (others => '0');
+            scl_signal <= '1';
+            sda_signal <= '1';
         elsif rising_edge(clk) then
             -- device clock is 32 times slower than clock, except for IDLE state
-            case next_state is
+            curr_state <= next_state;
+            case curr_state is
                 when IDLE =>
+                    scl_signal <= '1';
+                    sda_signal <= '1';
+                    scl_count <= (others => '0');
                     if valid = '1' then
                         addr_signal <= addr;
                         data_signal <= data;
-                        curr_state <= START;
-                    else
-                        curr_state <= next_state;
                     end if;
                 when others =>
-                        if scl_count = 31 then
-                            curr_state <= next_state;
-                        end if;
-                        scl_count <= scl_count + 1;
+                    scl_count <= scl_count + 1;
+                    scl_signal <= scl_count(4);
             end case;
         end if;
     end process;
     
     -- 2. Next state logic process
-    p_NEXT_STATE_LOGIC: process(curr_state)
+    p_NEXT_STATE_LOGIC: process(curr_state, valid, scl_count)
     begin
-        -- default
-        next_state <= curr_state;
-
-        case curr_state is
-            when IDLE => null;
-            when START =>
-                next_state <= ADDR;
-            when ADDR =>
-                if (byte_sent = 7) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
-                    next_state <= DATA;
-                elsif (byte_sent != 7) then
-                    next_state <= curr_state;
-                else
-                    -- NACK received, no availabel slave at addr
-                    next_state <= STOP;
-                end if;
-            when DATA => 
-                if (byte_sent = 8) and (scl = 0) and (sda = 0) then     -- Slave's address sent and exists (ACK)
-                    next_state <= STOP;
-                else
-                    next_state <= curr_state;
-                end if;
-            when STOP =>
-                next_state <= IDLE;
-        end case;
-
-
-                
-                
     end process;
     
     -- 3. Output logic
     p_OUTPUT_LOGIC: process(curr_state)
-    variable byte_sent : integer;
     begin
         -- default ('0' with counter < 16)
         scl <= scl_count(4);
@@ -109,28 +86,30 @@ architecture structure of WritingMaster is
                 scl <= '1';
                 sda <= '0';
             when ADDR =>
-                if (byte_sent < 7) and (scl = '1') then
-                    sda <= addr(byte_sent);
-                    byte_sent <= byte_sent + 1;
-                elsif byte_sent >= 7 then
+                if (byte_sent > 0) and (scl = '1') then
+                    if byte_sent = 1 then
+                        sda <= '0';                    -- writing command
+                    else
+                        sda <= addr(byte_sent - 1);
+                    byte_sent <= byte_sent - 1;
+                elsif byte_sent = 0 then
                     sda <= 'Z';                        -- free sda to receive ACK
                     scl <= '0';
-                    byte_sent <= 0;
                 else
                     sda <= sda;
                 end if;
             when DATA =>
-                if byte_sent < 8 then
+                if byte_sent > 0 then
                     case scl is 
                         when '1' => 
-                            sda <= data(byte_sent);
-                            byte_sent <= byte_sent + 1;
+                            sda <= data(byte_sent - 1);
+                            byte_sent <= byte_sent - 1;
                         when '0' =>
                             sda <= sda;
                     end case;
                 else
                     if (scl = '0') and (sda = '0') then     -- ACK received
-                        byte_sent := 0;
+                        byte_sent <= 7;
                     else
                         sda <= 'Z';                         -- free sda to receive ACK
                         scl <= '0';
