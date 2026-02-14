@@ -46,18 +46,13 @@ begin
             curr_state <= IDLE;
             scl_count <= (others => '0');
             bit_count <= (others => '0');
-            scl_signal <= '1';
-            sda_signal <= '1';
         elsif rising_edge(clk) then
             -- device clock is 32 times slower than clock, except for IDLE state
             curr_state <= next_state;
             scl_count <= scl_count + 1;
-            scl_signal <= scl_count(4);
 
             case curr_state is
                 when IDLE =>
-                    scl_signal <= '1';
-                    sda_signal <= '1';
                     scl_count <= (others => '0');
                     bit_count <= (others => '0');
 
@@ -69,8 +64,14 @@ begin
                     if scl_count = 31 then
                         bit_count <= bit_count + 1;
                     end if;
-                when ACK_ADDR | ACK_DATA =>
+                when ACK_ADDR =>
                     bit_count <= (others => '0');
+                when ACK_DATA =>
+                    bit_count <= (others => '0');
+                    if (scl_count = 31) and (valid = '1') then 
+                        addr_signal <= addr;
+                        data_signal <= data;
+                    end if;
             end case;
         end if;
     end process;
@@ -108,15 +109,20 @@ begin
             when ACK_DATA =>
                 if scl_count = 31 then
                     if sda = '0' then
-                        next_state <= STOP;
+                        if valid = '1' then
+                            next_state <= START;
+                        else
+                            next_state <= STOP;
+                        end if;
                     else
-                        next_state <= DATA;
+                        next_state <= STOP;
                     end if;
                 end if;
             when STOP => 
                 if scl_count = 31 then
                     next_state <= IDLE;
                 end if;
+        end case;
     end process;
     
     -- 3. Output logic
@@ -141,7 +147,7 @@ begin
             when ADDR =>
                 if bit_count < 7 then
                     -- MSB first order
-                    sda_signal <= addr(6 - to_integer(bit_count));
+                    sda_signal <= addr_signal(6 - to_integer(bit_count));
                 else
                     -- send write (W) command
                     sda_signal <= '0';
@@ -149,7 +155,7 @@ begin
             when ACK_ADDR | ACK_DATA =>
                 sda_signal <= 'Z';
             when DATA =>
-                sda_signal <= data(7 - to_integer(bit_count));
+                sda_signal <= data_signal(7 - to_integer(bit_count));
             when STOP =>
                 -- wait a little more to avoid a new START transition 
                 if scl_count < 24 then
@@ -157,6 +163,7 @@ begin
                 else
                     -- STOP signal with scl high and low to high transition of sda
                     sda_signal <= '1';
+                end if;
         end case;
     end process;
 
