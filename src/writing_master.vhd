@@ -25,7 +25,7 @@ end entity
 
 architecture structure of WritingMaster is
 
-    type state_t is (IDLE, START, ADDR, DATA, STOP);
+    type state_t is (IDLE, START, ADDR, ACK_ADDR, DATA, ACK_DATA, STOP);
     signal curr_state, next_state : state_t;
     signal scl_count :  unsigned(4 downto 0);               -- counter to set scl to '0' or '1' (32 times slowe than clk)
     signal bit_count :  unsigned(3 downto 0);               -- index of the next bit to send (MSB first), max 9 (8 bit data + ACK)
@@ -51,24 +51,30 @@ begin
         elsif rising_edge(clk) then
             -- device clock is 32 times slower than clock, except for IDLE state
             curr_state <= next_state;
+            scl_count <= scl_count + 1;
+            scl_signal <= scl_count(4);
+
             case curr_state is
                 when IDLE =>
                     scl_signal <= '1';
                     sda_signal <= '1';
                     scl_count <= (others => '0');
+                    bit_count <= (others => '0');
+
                     if valid = '1' then
                         addr_signal <= addr;
                         data_signal <= data;
                     end if;
-                when others =>
-                    scl_count <= scl_count + 1;
-                    scl_signal <= scl_count(4);
+                when ADDR =>
+                    if scl_count = 31 then
+                        bit_count <= bit_count + 1;
+                    end if;
             end case;
         end if;
     end process;
     
     -- 2. Next state logic process
-    p_NEXT_STATE_LOGIC: process(curr_state, valid, scl_count)
+    p_NEXT_STATE_LOGIC: process(curr_state, valid, scl_count, bit_count, sda)
     begin
         next_state <= curr_state;
         case curr_state is
@@ -80,10 +86,23 @@ begin
                 if scl_count = 31 then
                     next_state <= ADDR;
                 end if;
+            when ADDR => 
+                if (scl_count = 31) and (bit_count = 7) then
+                    next_state <= ACK_ADDR;
+                end if;
+            when ACK_ADDR =>
+                -- ACK signal is sda low 
+                if scl_count = 31 then
+                    if sda = '0' then
+                        next_state <= DATA;
+                    else
+                        next_state <= STOP;
+                    end if;
+                end if;
     end process;
     
     -- 3. Output logic
-    p_OUTPUT_LOGIC: process(curr_state, scl_count)
+    p_OUTPUT_LOGIC: process(curr_state, scl_count, bit_count)
     begin
         -- default ('0' with counter < 16, '1' >= 16)
         scl_signal <= scl_count(4);
@@ -101,6 +120,16 @@ begin
                     -- START signal with scl high and high to low transition of sda
                     sda_signal <= '0';
                 end if;
+            when ADDR =>
+                if bit_count < 7 then
+                    -- MSB first order
+                    sda_signal <= addr(6 - to_integer(bit_count));
+                else
+                    -- send write (W) command
+                    sda_signal <= '0';
+                end if;
+            when ACK_ADDR =>
+                sda_signal <= 'Z';
         end case;
     end process;
 
