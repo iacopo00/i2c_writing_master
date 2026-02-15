@@ -13,7 +13,7 @@ end entity;
 
 architecture behavior of tb_writing_master is
 
-    constant CLK_PERIOD : time := 20 ns;
+    constant CLK_PERIOD : time := 32 ns;
 
     -- component declaration
     component writing_master is
@@ -34,7 +34,7 @@ architecture behavior of tb_writing_master is
     signal addr_ext  : std_logic_vector(6 downto 0) := (others => '0');
     signal data_ext  : std_logic_vector(7 downto 0) := (others => '0');
     signal valid_ext : std_logic := '0';
-    signal sda_ext   : std_logic;
+    signal sda_ext   : std_logic := 'Z';
     signal scl_ext   : std_logic;
     signal testing   : boolean := true;
 
