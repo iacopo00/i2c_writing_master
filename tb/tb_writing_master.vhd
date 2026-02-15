@@ -95,7 +95,7 @@ architecture behavior of tb_writing_master is
             -- 9. Receive data
             for i in 7 downto 0 loop
                 wait until rising_edge(scl_ext);
-                assert (sda_ext = data(i)) 
+                assert (sda_ext = data_ext(i)) 
                     report "Error: Wrong data!" severity error;
             end loop;
 

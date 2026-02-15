@@ -25,7 +25,7 @@ end entity;
 
 architecture structure of writing_master is
 
-    type state_t is (IDLE, START, ADDR, ACK_ADDR, DATA, ACK_DATA, STOP);
+    type state_t is (IDLE, START, ADDR_STATE, ACK_ADDR, DATA_STATE, ACK_DATA, STOP);
     signal curr_state, next_state : state_t;
     signal scl_count :  unsigned(4 downto 0);               -- counter to set scl to '0' or '1' (32 times slowe than clk)
     signal bit_count :  unsigned(3 downto 0);               -- index of the next bit to send (MSB first), max 9 (8 bit data + ACK)
@@ -60,7 +60,7 @@ begin
                         addr_signal <= addr;
                         data_signal <= data;
                     end if;
-                when ADDR | DATA =>
+                when ADDR_STATE | DATA_STATE =>
                     if scl_count = 31 then
                         bit_count <= bit_count + 1;
                     end if;
@@ -87,9 +87,9 @@ begin
                 end if;
             when START =>
                 if scl_count = 31 then
-                    next_state <= ADDR;
+                    next_state <= ADDR_STATE;
                 end if;
-            when ADDR => 
+            when ADDR_STATE => 
                 if (scl_count = 31) and (bit_count = 7) then
                     next_state <= ACK_ADDR;
                 end if;
@@ -97,12 +97,12 @@ begin
                 -- ACK signal is sda low 
                 if scl_count = 31 then
                     if sda = '0' then
-                        next_state <= DATA;
+                        next_state <= DATA_STATE;
                     else
                         next_state <= STOP;
                     end if;
                 end if;
-            when DATA =>
+            when DATA_STATE =>
                 if (scl_count = 31) and (bit_count = 7) then
                     next_state <= ACK_DATA;
                 end if;
@@ -144,7 +144,7 @@ begin
                     -- START signal with scl high and high to low transition of sda
                     sda_signal <= '0';
                 end if;
-            when ADDR =>
+            when ADDR_STATE =>
                 if bit_count < 7 then
                     -- MSB first order
                     sda_signal <= addr_signal(6 - to_integer(bit_count));
@@ -154,7 +154,7 @@ begin
                 end if;
             when ACK_ADDR | ACK_DATA =>
                 sda_signal <= 'Z';
-            when DATA =>
+            when DATA_STATE =>
                 sda_signal <= data_signal(7 - to_integer(bit_count));
             when STOP =>
                 -- wait a little more to avoid a new START transition 
