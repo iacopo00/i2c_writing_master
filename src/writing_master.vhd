@@ -21,7 +21,7 @@ entity writing_master is
         sda : inout std_logic;                      -- data line for serial communication between master and slave
         scl : out std_logic                         -- device clock line
     );
-end entity
+end entity;
 
 architecture structure of writing_master is
 
