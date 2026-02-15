@@ -72,6 +72,7 @@ begin
                         addr_signal <= addr;
                         data_signal <= data;
                     end if;
+                when others => null;
             end case;
         end if;
     end process;
