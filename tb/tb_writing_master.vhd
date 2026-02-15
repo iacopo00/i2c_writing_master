@@ -109,6 +109,7 @@ architecture behavior of tb_writing_master is
 
             -- 12. Wait for STOP condition (SDA goes high while SCL is high)
             wait until rising_edge(sda_ext) and scl_ext = '1';
+            testing <= false;
             wait;
         end process;
 end architecture;
