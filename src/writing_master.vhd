@@ -10,7 +10,7 @@ library ieee;
 
 
 
-entity WritingMaster is
+entity writing_master is
      -- I/O ports definition
     port (
         clk : in std_logic;                         -- system clock signal
@@ -23,7 +23,7 @@ entity WritingMaster is
     );
 end entity
 
-architecture structure of WritingMaster is
+architecture structure of writing_master is
 
     type state_t is (IDLE, START, ADDR, ACK_ADDR, DATA, ACK_DATA, STOP);
     signal curr_state, next_state : state_t;
