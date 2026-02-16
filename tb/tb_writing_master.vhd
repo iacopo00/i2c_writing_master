@@ -13,7 +13,7 @@ end entity;
 
 architecture behavior of tb_writing_master is
 
-    constant CLK_PERIOD : time := 32 ns;
+    constant CLK_PERIOD : time := 20 ns;
 
     -- component declaration
     component writing_master is
@@ -58,9 +58,9 @@ architecture behavior of tb_writing_master is
             reset_ext <= '0';
             wait for CLK_PERIOD;
             reset_ext <= '1';
-            wait until rising_edge(clk_ext);
 
             -- 2. Send data, addr and setting valid to 1
+            wait until rising_edge(clk_ext);
             addr_ext <= "1010101";
             data_ext <= "11001100";
             valid_ext <= '1';
@@ -102,13 +102,60 @@ architecture behavior of tb_writing_master is
             -- 10. Wait for the master to release the bus for the ACK phase
             wait until sda_ext = 'Z';
 
-            -- 11. Send the ACK
+            -- 11 & 12. Send the ACK AND simultaneously command the next byte
+            sda_ext <= '0'; -- Slave pulls SDA low for ACK
+            
+            -- Immediately assert the new command while holding the ACK
+            addr_ext <= "1010101";
+            data_ext <= "11001100";
+            valid_ext <= '1';
+        
+            -- 13. Release valid and sda
+            wait for 32 * CLK_PERIOD; 
+            valid_ext <= '0';
+            sda_ext <= 'Z';
+
+            -- 14. Wait for REPEATED START condition (SDA goes low while SCL is high)
+            wait until falling_edge(sda_ext) and scl_ext = '1';
+
+            -- 15. Verify the 7 Address bits (MSB first: index 6 down to 0)
+            for i in 6 downto 0 loop
+                wait until rising_edge(scl_ext);
+                assert (sda_ext = addr_ext(i)) 
+                    report "Error: No slaves match!" severity error;
+            end loop;
+
+            -- 16. Verify the R/W bit (Write = '0')
+            wait until rising_edge(scl_ext);
+            assert (sda_ext = '0') 
+                report "Error: R/W bit should be '0' for writing!" severity error;
+
+            -- 17. Wait for the master to release the bus for the ACK phase
+            wait until sda_ext = 'Z';
+    
+            -- 18. Send the ACK
             sda_ext <= '0';
             wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
-            -- 12. Wait for STOP condition (SDA goes high while SCL is high)
+            -- 19. Receive data
+            for i in 7 downto 0 loop
+                wait until rising_edge(scl_ext);
+                assert (sda_ext = data_ext(i)) 
+                    report "Error: Wrong data!" severity error;
+            end loop;
+
+            -- 20. Wait for the master to release the bus for the ACK phase
+            wait until sda_ext = 'Z';
+
+            -- 21. Send the ACK
+            sda_ext <= '0';
+            wait for 32 * CLK_PERIOD;
+            sda_ext <= 'Z';
+
+            -- 22. Wait for STOP condition (SDA goes high while SCL is high)
             wait until rising_edge(sda_ext) and scl_ext = '1';
+            wait for 8 * CLK_PERIOD;
             testing <= false;
             wait;
         end process;
