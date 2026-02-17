@@ -87,7 +87,7 @@ architecture behavior of tb_writing_master is
             -- 7. Wait for the master to release the bus for the ACK phase
             wait until sda_ext = 'Z';
     
-            -- 8. Send the ACK
+            -- 8. Send the ACK waiting enough time to be sure master received it
             sda_ext <= '0';
             wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';

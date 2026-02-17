@@ -127,7 +127,7 @@ begin
     end process;
     
     -- 3. Output logic
-    p_OUTPUT_LOGIC: process(curr_state, scl_count, bit_count)
+    p_OUTPUT_LOGIC: process(curr_state, scl_count, bit_count, addr_signal, data_signal)
     begin
         -- default ('0' with counter < 16, '1' >= 16)
         scl_signal <= scl_count(4);

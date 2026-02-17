@@ -1,4 +1,6 @@
-# --- Vivado (Xilinx) ---
+# ==========================================
+# VIVADO (XILINX)
+# ==========================================
 *.jou
 *.log
 *.pb
@@ -8,20 +10,41 @@
 .Xil/
 .hbs/
 hd_visual/
-*.xpr
 *.cache/
 *.hw/
 *.ip_user_files/
 *.runs/
 *.sim/
+*.ioplanning/
 
-# --- ModelSim / QuestaSim ---
+# ==========================================
+# MODELSIM / QUESTASIM
+# ==========================================
 transcript
 *.wlf
 work/
 covhtmlreport/
 vsim.wlf
 
-# --- Temporary system files ---
+# ==========================================
+# OS
+# ==========================================
 .DS_Store
-*~
+Thumbs.db
+
+# ==========================================
+# LATEX
+# ==========================================
+*.aux
+*.bbl
+*.blg
+*.fls
+*.out
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.idx
+*.ind
+*.ilg
