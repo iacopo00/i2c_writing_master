@@ -1,21 +1,18 @@
-\documentclass[a4paper, 12pt]{article}
+\documentclass[a4paper, 12pt]{report}
 
-% 1. Carica tutte le impostazioni dal file esterno
 \input{package.tex}
 
-\title{Titolo del Progetto Universitario}
-\author{Il tuo nome \and Nome Collega}
-\date{\today}
+\newcommand{\IIC}{I\textsuperscript{2}C}
 
 \begin{document}
 
-\maketitle
-\newpage
+\input{sections/00_title_page.tex}
 
 \tableofcontents
 \newpage
 
-
 \input{sections/01_intro.tex}
 
+
+\printbibliography
 \end{document}
