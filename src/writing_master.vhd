@@ -18,7 +18,7 @@ entity writing_master is
         addr : in std_logic_vector(6 downto 0);     -- slave's address
         data : in std_logic_vector(7 downto 0);     -- writing data
         valid : in std_logic;                       -- input validity signal ('1' or '0')
-        sda : inout std_logic;                      -- data line for serial communication between master and slave
+        sda : inout std_logic;                      -- data line for serial communication
         scl : out std_logic                         -- device clock line
     );
 end entity;

@@ -7,3 +7,30 @@
 \usepackage[backend=biber, style=ieee]{biblatex}
 \addbibresource{bibliografia.bib}
 \usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{vhdlstyle}{
+    language=VHDL,
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\scriptsize,  
+    breaklines=true,                  
+    breakatwhitespace=true,           
+    columns=flexible,                 
+    keepspaces=true,                  
+    showstringspaces=false,           
+    captionpos=b,                    
+    numbers=left,                    
+    numbersep=5pt,                  
+    tabsize=2,                       
+    frame=single                     
+}
+\lstset{style=vhdlstyle}
