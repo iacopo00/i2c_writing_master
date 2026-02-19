@@ -2,4 +2,21 @@
 
 \chapter{VHDL}
 
-\lstinputlisting[firstline=13, lastline=24, caption={Writing Master Entity}]{../../src/writing_master.vhd}
+In this chapter the VHDL description of the Writing Master is presented, starting from an external view, with the entity description, to the internal architecture of the device.
+
+
+\section{Entity declaration}
+
+Listing \ref{list:entity_declaration} reports the external description of the Writing Master, as presented in Figure \ref{fig:i2c_wm_design}:
+
+\lstinputlisting[firstline=13, lastline=24, caption={Writing Master Entity}, label={list:entity_declaration}]{../../src/writing_master.vhd}
+
+The entity interfaces are presented by the \texttt{port} description, where all input and output signals are reported. As already said, the \texttt{sda} signal is a \texttt{inout} port because it is used both by the master and the slave. All the signals are based on the \texttt{std\_logic} family, and not \texttt{bit} type, because they can assume other logic values rather than only \texttt{1} or \texttt{0}, as the \texttt{Z} logic value for the \texttt{inout} signal. Every signal is represented by one bit, except for \texttt{addr} and \texttt{data} signals that are \texttt{std\_logic\_vector} because they are parallel buses on 7 and 8 bits respectively.
+
+\section{Architecture description}
+
+This section provides the internal description of the entity, including the declarative part and the statement part of the architecture.
+
+\subsection{Declarative part}
+
+\lstinputlisting[firstline=26, lastline=35, caption={Architecture declarative part}, label={list:declarative_part}]{../../src/writing_master.vhd}
