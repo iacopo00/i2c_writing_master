@@ -19,4 +19,28 @@ This section provides the internal description of the entity, including the decl
 
 \subsection{Declarative part}
 
+Listing \ref{list:declarative_part} reports all the internal signals and types used to implement the logic of the Writing Master:
+
 \lstinputlisting[firstline=26, lastline=35, caption={Architecture declarative part}, label={list:declarative_part}]{../../src/writing_master.vhd}
+
+The type \texttt{state\_t} defines all the states of the FSM. The \texttt{curr\_state} and \texttt{next\_state} signals are declared as \texttt{state\_t} type to track the state. Regarding the counter signals, \texttt{scl\_count} and \texttt{bit\_count}, they are defined as \texttt{unsigned} type (5 and 4 bits respectively). Both signals are represented as a bus of wires, but they are interpreted as natural numbers allowing the use of basic arithmetic operations (\texttt{std\_logic\_vector} type is interpreted just as wires). Adding to this, the choice of the \texttt{unsigned} type, rather than \texttt{integer} type, is justified by the possibility to specify the exact number of bits needed (\texttt{integer} type occupies 32 bits) and to access the individual bits. The \texttt{addr\_signal} and \texttt{data\_signal} are used to register the values of the corresponding inputs when the \texttt{valid} signal is \texttt{1}. Finally, the \texttt{scl\_signal} and \texttt{sda\_signal} act as internal registers to update and hold the corresponding output signals.
+
+\newpage
+
+\subsection{Statement part}
+
+The statement part is divided into three processes corresponding to the three blocks illustrated in Figure \ref{fig:block_diagram}:
+
+\begin{itemize}
+    \item \texttt{p\_STATE\_REG}, corresponding to the \texttt{REG\_STATE LOGIC} block;
+    \item \texttt{p\_NEXT\_STATE\_LOGIC}, corresponding to the \texttt{NEXT\_STATE LOGIC} block;
+    \item \texttt{p\_OUTPUT\_LOGIC}, corresponding to the \texttt{OUTPUT LOGIC} block.
+\end{itemize}
+
+These three processes are illustrated in detail in the following sections.
+
+
+\subsubsection{p\_STATE\_REG}
+
+\lstinputlisting[firstline=42, lastline=78, caption={p\_STATE\_REG process}, label={list:p_state_reg}]{../../src/writing_master.vhd}
+

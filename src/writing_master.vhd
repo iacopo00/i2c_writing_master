@@ -27,7 +27,7 @@ architecture structure of writing_master is
 
     type state_t is (IDLE, START, ADDR_STATE, ACK_ADDR, DATA_STATE, ACK_DATA, STOP);
     signal curr_state, next_state : state_t;
-    signal scl_count :  unsigned(4 downto 0);               -- counter to set scl to '0' or '1' (32 times slowe than clk)
+    signal scl_count :  unsigned(4 downto 0);               -- counter to set scl to '0' or '1' (32 times slower than clk)
     signal bit_count :  unsigned(3 downto 0);               -- index of the next bit to send (MSB first), max 9 (8 bit data + ACK)
     signal addr_signal :  std_logic_vector(6 downto 0);     -- set to addr when valid is '1'
     signal data_signal :  std_logic_vector(7 downto 0);     -- set to data when valid is '1'
