@@ -44,3 +44,18 @@ These three processes are illustrated in detail in the following sections.
 
 \lstinputlisting[firstline=42, lastline=78, caption={p\_STATE\_REG process}, label={list:p_state_reg}]{../../src/writing_master.vhd}
 
+The sensitivity list of this process is composed of two signals: \texttt{reset} and \texttt{clk} (the system clock). The process triggers whenever an event occurs on one of these two signals; the internal logic evaluates the reset phase and the rising edge of the clock. During the reset phase the \texttt{curr\_state} is set to the \texttt{IDLE} state and all counters are set to \texttt{0}. On the rising edge of the clock the state register is updated by the \texttt{next\_state} signal. Additionally, the internal counters and the data registers (\texttt{addr\_signal} and \texttt{data\_signal}) are updated accordin to the control signals.
+
+\subsubsection{p\_NEXT\_STATE\_LOGIC}
+
+\begin{minipage}{\textwidth}
+\lstinputlisting[firstline=81, lastline=127, caption={p\_NEXT\_STATE\_LOGIC process}, label={list:p_next_state}]{../../src/writing_master.vhd}
+\end{minipage}
+
+This process, corresponding to the \texttt{NEXT\_STATE\_LOGIC} block in Figure \ref{fig:block_diagram}, implements the combinatorial logic to determine the next state based on the \texttt{valid} signal for the \texttt{START} state and on the \texttt{scl\_count} signal to synchronize the clock of the \IIC{} protocol. Furthermore, to detect the end of the sending phase and to know when the acknowledgement signal is received, the internal logic evaluates the \texttt{bit\_count} and \texttt{sda} signals, respectively. In the \texttt{ACK\_DATA} state, a check on the \texttt{valid} signal is performed to start a new, consecutive transmission without releasing the \IIC{} bus. To avoid inferred latches, a default assignment is provided at line 3 of Listing \ref{list:p_next_state}.
+
+\subsubsection{p\_OUTPUT\_LOGIC}
+
+\lstinputlisting[firstline=130, lastline=169, caption={p\_OUTPUT\_LOGIC process}, label={list:p_output_logic}]{../../src/writing_master.vhd}
+
+The \texttt{p\_OUTPUT\_LOGIC} process, corresponding to the \texttt{OUTPUT\_LOGIC} block in Figure \ref{fig:block_diagram}, sets the outputs of the \IIC{} protocol. It evaluates the \texttt{curr\_state} signal, uses the \texttt{scl\_count} signal to generate the \IIC{} clock and relies on the \texttt{bit\_count} signal for the correct bit to transmit on the \texttt{sda} line. As in the previous process, a default assignment is provided at lines 4 and 5 of Listing \ref{list:p_output_logic} to avoid inferred latches.
