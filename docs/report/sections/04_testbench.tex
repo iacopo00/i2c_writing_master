@@ -1,3 +1,16 @@
 % !TeX root = ../main.tex
 
 \chapter{Testing implementation}
+
+The implementation described in the previous chapter is tested in four different scenarios:
+
+\begin{itemize}
+    \item \textbf{one message}, the simplest one where the master has to send just one byte to an existing slave;
+    \item \textbf{multiple messages}, after transmitting one message successfully, the master receives a new message to transmit to the same slave or to another, without releasing the \IIC{} bus;
+    \item \textbf{NACK received}, where the master receives a NACK (\texttt{sda} signal high with \texttt{scl} high) in the \texttt{ACK\_ADDR} and \texttt{ACK\_DATA} states;
+    \item \textbf{asynchronous reset}, where the \texttt{reset} signal is activated (\texttt{0}) during the protocol.
+\end{itemize}
+
+All tests are executed with different inputs. Specifically, the \textbf{multiple messages} test is performed by transmitting to the same slave or to a different one. Furthermore, the system clock period is set to 8 ns, which corresponds to a frequency of 125 MHz. This value was specifically chosen to match the Programmable Logic (PL) clock of the ZyBo development board, as presented in the course materials.
+
+For the details of the test bench implementation, the \textsl{tb\_writing\_master.vhd} file is provided.
