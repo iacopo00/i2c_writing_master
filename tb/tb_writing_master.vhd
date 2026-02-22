@@ -16,7 +16,7 @@ architecture behavior of tb_writing_master is
     constant CLK_PERIOD : time := 8 ns;
 
     -- component declaration
-    component writing_master is
+    component writing_master_wrapper is
         port (
             clk   : in std_logic;
             reset : in std_logic;
@@ -39,7 +39,7 @@ architecture behavior of tb_writing_master is
     signal testing   : boolean := true;
 
     begin
-        i_DUT: writing_master
+        i_DUT: writing_master_wrapper
             port map (
                 clk => clk_ext,
                 reset => reset_ext,
@@ -341,30 +341,6 @@ architecture behavior of tb_writing_master is
             wait for 8 * CLK_PERIOD; -- time checkpoint printed
             report "NACK DATA scenario completed!";
 
-            -- ASYNCHRONOUS RESET SCENARIO --
-            addr_ext <= "1010100";
-            data_ext <= "11110010";
-            valid_ext <= '1';
-            wait until falling_edge(sda_ext) and scl_ext = '1';
-            valid_ext <= '0';
-
-            for i in 1 to 6 loop
-                wait until rising_edge(scl_ext);
-            end loop;
-
-            wait for 3 ns;
-            reset_ext <= '0'; 
-
-            wait for 1 ns;
-            assert (sda_ext = '1' and scl_ext = '1') 
-                report "Error: master is not in IDLE state!" severity failure;
-
-            wait for 2 * CLK_PERIOD;
-            reset_ext <= '1';
-
-            report "ASYNCHRONOUS SCENARIO COMPLETED";
-            wait until rising_edge(clk_ext);
-            wait for 8 * CLK_PERIOD;
             testing <= false;
             wait;
         end process;

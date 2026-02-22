@@ -24,7 +24,7 @@ The waveforms for the described scenarios are illustrated in the following secti
 \begin{figure}[htbp]
     \centering
 
-    \includegraphics[width=0.8\textwidth]{../imgs/one_message_scenario.pdf}
+    \includegraphics[width=1.0\textwidth]{../imgs/one_message_scenario.pdf}
     
     \caption{One message scenario}
     \label{fig:one_message}
@@ -39,7 +39,7 @@ Figure \ref{fig:one_message} shows the correct behavior of the \IIC{} Writing Ma
 \begin{figure}[htbp]
     \centering
 
-    \includegraphics[width=0.8\textwidth]{../imgs/multiple_messages_same_scenario.pdf}
+    \includegraphics[width=1.0\textwidth]{../imgs/multiple_messages_same_scenario.pdf}
     
     \caption{Multiple messages same address scenario}
     \label{fig:multiple_messages_same}
@@ -54,7 +54,7 @@ Figure \ref{fig:multiple_messages_same} shows the correct behavior of the \IIC{}
 \begin{figure}[htbp]
     \centering
 
-    \includegraphics[width=0.8\textwidth]{../imgs/multiple_messages_different_scenario.pdf}
+    \includegraphics[width=1.0\textwidth]{../imgs/multiple_messages_different_scenario.pdf}
     
     \caption{Multiple messages different address scenario}
     \label{fig:multiple_messages_different}
@@ -69,7 +69,7 @@ Figure \ref{fig:multiple_messages_different} shows the correct behavior of the \
 \begin{figure}[htbp]
     \centering
 
-    \includegraphics[width=0.8\textwidth]{../imgs/nack_addr_scenario.pdf}
+    \includegraphics[width=1.0\textwidth]{../imgs/nack_addr_scenario.pdf}
     
     \caption{NACK received on address}
     \label{fig:nack_address}
@@ -84,23 +84,10 @@ Figure \ref{fig:nack_address} shows the correct behavior of the \IIC{} Writing M
 \begin{figure}[htbp]
     \centering
 
-    \includegraphics[width=0.8\textwidth]{../imgs/nack_data_scenario.pdf}
+    \includegraphics[width=1.0\textwidth]{../imgs/nack_data_scenario.pdf}
     
     \caption{NACK received on data}
     \label{fig:nack_data}
 \end{figure}
 
 Figure \ref{fig:nack_data} shows the correct behavior of the \IIC{} Writing Master when a NACK bit is received during data transmission: after correctly detecting the NACK (\texttt{sda} is \texttt{1}), the current state is set to \texttt{STOP}.
-
-\subsection{Asynchronous reset}
-
-\begin{figure}[htbp]
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{../imgs/aynchronous_reset_scenario.pdf}
-    
-    \caption{Asynchronous reset scenario}
-    \label{fig:asynchronous_reset}
-\end{figure}
-
-Figure \ref{fig:asynchronous_reset} shows the correct behavior of the \IIC{} Writing Master when a \texttt{reset} signal is received during the transaction: the current state is set to \texttt{IDLE} and the counters are set to zero.

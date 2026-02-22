@@ -12,6 +12,14 @@ Model Technology ModelSim - Intel FPGA Edition vcom 2020.1 Compiler 2020.02 Feb 
 -- Compiling entity tb_writing_master
 -- Compiling architecture behavior of tb_writing_master
 
+} {} {}} /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/writing_master_wrapper.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/writing_master_wrapper.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 2020.1 Compiler 2020.02 Feb 28 2020
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity writing_master_wrapper
+-- Compiling architecture structural of writing_master_wrapper
+
 } {} {}} /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/writing_master.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/writing_master.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 2020.1 Compiler 2020.02 Feb 28 2020
 -- Loading package STANDARD
@@ -25,5 +33,23 @@ Model Technology ModelSim - Intel FPGA Edition vcom 2020.1 Compiler 2020.02 Feb 
 -- Loading package body fixed_generic_pkg
 -- Compiling entity writing_master
 -- Compiling architecture structure of writing_master
+
+} {} {}} /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/DFF.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/DFF.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 2020.1 Compiler 2020.02 Feb 28 2020
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity DFF
+-- Compiling architecture rtl of DFF
+
+} {} {}} /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/DFF_N.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/iacopomassei/Documents/Electronics/Project/i2c_writing_master/src/DFF_N.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 2020.1 Compiler 2020.02 Feb 28 2020
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity DFF_N
+-- Compiling architecture rtl of DFF_N
 
 } {} {}}

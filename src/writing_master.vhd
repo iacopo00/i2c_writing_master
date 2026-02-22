@@ -18,7 +18,9 @@ entity writing_master is
         addr : in std_logic_vector(6 downto 0);     -- slave's address
         data : in std_logic_vector(7 downto 0);     -- writing data
         valid : in std_logic;                       -- input validity signal ('1' or '0')
-        sda : inout std_logic;                      -- data line for serial communication
+        sda_in : in std_logic;                      -- data line to receive ack/nack
+        sda_out : out std_logic;                    -- data line to transmit serial data
+        sda_en : out std_logic;                     -- enable to switch write or read on sda
         scl : out std_logic                         -- device clock line
     );
 end entity;
@@ -32,11 +34,13 @@ architecture structure of writing_master is
     signal addr_signal :  std_logic_vector(6 downto 0);     -- set to addr when valid is '1'
     signal data_signal :  std_logic_vector(7 downto 0);     -- set to data when valid is '1'
     signal scl_signal : std_logic;                          -- used to read/set scl signal without error
-    signal sda_signal : std_logic;                          -- used to read/set sda signal without error
+    signal sda_out_signal : std_logic;                      -- used to set sda signal without error
+    signal sda_en_signal : std_logic;                       -- used to switch between read and write on sda
 
 begin
     scl <= scl_signal;
-    sda <= sda_signal;
+    sda_out <= sda_out_signal;
+    sda_en <= sda_en_signal;
 
     -- 1. State memory update
     p_STATE_REG: process(clk, reset)
@@ -78,7 +82,7 @@ begin
     end process;
     
     -- 2. Next state logic process
-    p_NEXT_STATE_LOGIC: process(curr_state, valid, scl_count, bit_count, sda)
+    p_NEXT_STATE_LOGIC: process(curr_state, valid, scl_count, bit_count, sda_in)
     begin
         next_state <= curr_state;
         case curr_state is
@@ -95,9 +99,9 @@ begin
                     next_state <= ACK_ADDR;
                 end if;
             when ACK_ADDR =>
-                -- ACK signal is sda low 
+                -- ACK signal is sda_in low 
                 if scl_count = 31 then
-                    if sda = '0' then
+                    if sda_in = '0' then
                         next_state <= DATA_STATE;
                     else
                         next_state <= STOP;
@@ -109,7 +113,7 @@ begin
                 end if;
             when ACK_DATA =>
                 if scl_count = 31 then
-                    if sda = '0' then
+                    if sda_in = '0' then
                         if valid = '1' then
                             next_state <= START;
                         else
@@ -131,39 +135,40 @@ begin
     begin
         -- default ('0' with counter < 16, '1' >= 16)
         scl_signal <= scl_count(4);
-        sda_signal <= '1';
+        sda_out_signal <= '1';
+        sda_en_signal <= '1'; -- default master controls sda line
 
         case curr_state is
             when IDLE =>
                 scl_signal <= '1';
-                sda_signal <= '1';
+                sda_out_signal <= '1';
             when START =>
                 scl_signal <= '1';
                 if scl_count < 16 then
-                    sda_signal <= '1';
+                    sda_out_signal <= '1';
                 else
                     -- START signal with scl high and high to low transition of sda
-                    sda_signal <= '0';
+                    sda_out_signal <= '0';
                 end if;
             when ADDR_STATE =>
                 if bit_count < 7 then
                     -- MSB first order
-                    sda_signal <= addr_signal(6 - to_integer(bit_count));
+                    sda_out_signal <= addr_signal(6 - to_integer(bit_count));
                 else
                     -- send write (W) command
-                    sda_signal <= '0';
+                    sda_out_signal <= '0';
                 end if;
             when ACK_ADDR | ACK_DATA =>
-                sda_signal <= 'Z';
+                sda_en_signal <= '0';   -- slave controls sda line
             when DATA_STATE =>
-                sda_signal <= data_signal(7 - to_integer(bit_count));
+                sda_out_signal <= data_signal(7 - to_integer(bit_count));
             when STOP =>
                 -- wait a little more to avoid a new START transition 
                 if scl_count < 24 then
-                    sda_signal <= '0';
+                    sda_out_signal <= '0';
                 else
                     -- STOP signal with scl high and low to high transition of sda
-                    sda_signal <= '1';
+                    sda_out_signal <= '1';
                 end if;
         end case;
     end process;
