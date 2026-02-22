@@ -14,3 +14,93 @@ The implementation described in the previous chapter is tested in four different
 All tests are executed with different inputs. Specifically, the \textbf{multiple messages} test is performed by transmitting to the same slave or to a different one. Furthermore, the system clock period is set to 8 ns, which corresponds to a frequency of 125 MHz. This value was specifically chosen to match the Programmable Logic (PL) clock of the ZyBo development board, as presented in the course materials.
 
 For the details of the test bench implementation, the \textsl{tb\_writing\_master.vhd} file is provided.
+
+The waveforms for the described scenarios are illustrated in the following sections.
+
+\newpage
+
+\section{One message scenario}
+
+\begin{figure}[htbp]
+    \centering
+
+    \includegraphics[width=0.8\textwidth]{../imgs/one_message_scenario.pdf}
+    
+    \caption{One message scenario}
+    \label{fig:one_message}
+\end{figure}
+
+Figure \ref{fig:one_message} shows the correct behavior of the \IIC{} Writing Master: after receiving the acknowledgement bit, the current state is set to \texttt{STOP} and then returns to \texttt{IDLE}.
+
+\section{Multiple messages}
+
+\subsection{Same address}
+
+\begin{figure}[htbp]
+    \centering
+
+    \includegraphics[width=0.8\textwidth]{../imgs/multiple_messages_same_scenario.pdf}
+    
+    \caption{Multiple messages same address scenario}
+    \label{fig:multiple_messages_same}
+\end{figure}
+
+Figure \ref{fig:multiple_messages_same} shows the correct behavior of the \IIC{} Writing Master when a consecutive start to the same address is performed: after receiving the acknowledgement bit, the current state is set to \texttt{START} and then it initiates a new transaction.
+
+\newpage
+
+\subsection{Different address}
+
+\begin{figure}[htbp]
+    \centering
+
+    \includegraphics[width=0.8\textwidth]{../imgs/multiple_messages_different_scenario.pdf}
+    
+    \caption{Multiple messages different address scenario}
+    \label{fig:multiple_messages_different}
+\end{figure}
+
+Figure \ref{fig:multiple_messages_different} shows the correct behavior of the \IIC{} Writing Master when a consecutive start to a different address is performed: after receiving the acknowledgement bit, a new address is read, the current state is set to \texttt{START} and then it initiates a new transaction.
+
+\subsection{NACK}
+
+\subsubsection{NACK on address}
+
+\begin{figure}[htbp]
+    \centering
+
+    \includegraphics[width=0.8\textwidth]{../imgs/nack_addr_scenario.pdf}
+    
+    \caption{NACK received on address}
+    \label{fig:nack_address}
+\end{figure}
+
+Figure \ref{fig:nack_address} shows the correct behavior of the \IIC{} Writing Master when a NACK bit is received for the slave address: after receiving the NACK, the current state is set to \texttt{STOP}.
+
+\newpage
+
+\subsubsection{NACK on data}
+
+\begin{figure}[htbp]
+    \centering
+
+    \includegraphics[width=0.8\textwidth]{../imgs/nack_data_scenario.pdf}
+    
+    \caption{NACK received on data}
+    \label{fig:nack_data}
+\end{figure}
+
+Figure \ref{fig:nack_data} shows the correct behavior of the \IIC{} Writing Master when a NACK bit is received during data transmission: after correctly detecting the NACK (\texttt{sda} is \texttt{1}), the current state is set to \texttt{STOP}.
+
+\subsection{Asynchronous reset}
+
+\begin{figure}[htbp]
+    \centering
+
+    \includegraphics[width=0.8\textwidth]{../imgs/aynchronous_reset_scenario.pdf}
+    
+    \caption{Asynchronous reset scenario}
+    \label{fig:asynchronous_reset}
+\end{figure}
+
+Figure \ref{fig:asynchronous_reset} shows the correct behavior of the \IIC{} Writing Master when a \texttt{reset} signal is received during the transaction: the current state is set to \texttt{IDLE} and the counters are set to zero.

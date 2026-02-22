@@ -88,7 +88,7 @@ architecture behavior of tb_writing_master is
     
             -- 8. Send the ACK waiting enough time to be sure master received it
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             -- 9. Receive data
@@ -102,16 +102,16 @@ architecture behavior of tb_writing_master is
             wait until sda_ext = 'Z';
 
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             -- 11. Wait for STOP condition
             wait until rising_edge(sda_ext) and scl_ext = '1';
-            report "One message scenario completed!";
 
+            wait for 8 * CLK_PERIOD; -- time checkpoint printed
+            report "One message scenario completed!";
             -- MULTIPLE MESSAGES SCENARIO --
             -- Same until point 10
-            wait for 8 * CLK_PERIOD;
             addr_ext <= "1101010";
             data_ext <= "00110011";
             valid_ext <= '1';
@@ -133,7 +133,7 @@ architecture behavior of tb_writing_master is
             wait until sda_ext = 'Z';
     
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32* CLK_PERIOD;
             sda_ext <= 'Z';
 
             for i in 7 downto 0 loop
@@ -150,7 +150,7 @@ architecture behavior of tb_writing_master is
             valid_ext <= '1';
 
             sda_ext <= '0';
-            wait until rising_edge(scl_ext);
+            wait for 32*CLK_PERIOD;
             sda_ext <= 'Z';
 
             -- Second START
@@ -172,7 +172,7 @@ architecture behavior of tb_writing_master is
             wait until sda_ext = 'Z';
     
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             for i in 7 downto 0 loop
@@ -184,14 +184,15 @@ architecture behavior of tb_writing_master is
 
             wait until sda_ext = 'Z';
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             wait until rising_edge(sda_ext) and scl_ext = '1';
 
+            wait for 8 * CLK_PERIOD; -- time checkpoint printed
+            report "Multiple messages to the same addresses completed!";
             -- MULTIPLE MESSAGES SCENARIO --
             -- Same until point 10
-            wait for 8 * CLK_PERIOD;
             addr_ext <= "1101010";
             data_ext <= "00110011";
             valid_ext <= '1';
@@ -213,7 +214,7 @@ architecture behavior of tb_writing_master is
             wait until sda_ext = 'Z';
     
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             for i in 7 downto 0 loop
@@ -230,7 +231,7 @@ architecture behavior of tb_writing_master is
             valid_ext <= '1';
 
             sda_ext <= '0';
-            wait until rising_edge(scl_ext);
+            wait for 32*CLK_PERIOD;
             sda_ext <= 'Z';
 
             -- Second START
@@ -252,7 +253,7 @@ architecture behavior of tb_writing_master is
             wait until sda_ext = 'Z';
     
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             for i in 7 downto 0 loop
@@ -264,15 +265,15 @@ architecture behavior of tb_writing_master is
 
             wait until sda_ext = 'Z';
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             wait until rising_edge(sda_ext) and scl_ext = '1';
 
-            report "Multiple messages scenario completed!";
+            wait for 8 * CLK_PERIOD; -- time checkpoint printed
+            report "Multiple messages to different addresses completed!";
 
             -- NACK ADDR SCENARIO --
-            wait for 8 * CLK_PERIOD;
             addr_ext <= "0110101";
             data_ext <= "11011100";
             valid_ext <= '1';
@@ -292,14 +293,15 @@ architecture behavior of tb_writing_master is
             wait until sda_ext = 'Z';
     
             sda_ext <= '1'; -- NACK ADDR
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             wait until rising_edge(sda_ext) and scl_ext = '1';
+ 
+            wait for 8 * CLK_PERIOD; -- time checkpoint printed
             report "NACK ADDR scenario completed!";
 
-            -- NACK DATA SCENARIO -- 
-            wait for 8 * CLK_PERIOD;
+            -- NACK DATA SCENARIO --
             addr_ext <= "0110101";
             data_ext <= "11011100";
             valid_ext <= '1';
@@ -319,7 +321,7 @@ architecture behavior of tb_writing_master is
             wait until sda_ext = 'Z';
     
             sda_ext <= '0';
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             for i in 7 downto 0 loop
@@ -331,25 +333,22 @@ architecture behavior of tb_writing_master is
 
             wait until sda_ext = 'Z';
             sda_ext <= '1'; -- NACK DATA
-            wait until falling_edge(scl_ext);
+            wait for 32 * CLK_PERIOD;
             sda_ext <= 'Z';
 
             wait until rising_edge(sda_ext) and scl_ext = '1';
+
+            wait for 8 * CLK_PERIOD; -- time checkpoint printed
             report "NACK DATA scenario completed!";
-            
-            valid_ext <= '0';
-            addr_ext  <= (others => '0');
-            data_ext  <= (others => '0');
 
             -- ASYNCHRONOUS RESET SCENARIO --
-            wait for 8 * CLK_PERIOD;
             addr_ext <= "1010100";
             data_ext <= "11110010";
             valid_ext <= '1';
             wait until falling_edge(sda_ext) and scl_ext = '1';
             valid_ext <= '0';
 
-            for i in 1 to 10 loop
+            for i in 1 to 6 loop
                 wait until rising_edge(scl_ext);
             end loop;
 
@@ -364,11 +363,6 @@ architecture behavior of tb_writing_master is
             reset_ext <= '1';
 
             report "ASYNCHRONOUS SCENARIO COMPLETED";
-
-            valid_ext <= '0';
-            addr_ext  <= (others => '0');
-            data_ext  <= (others => '0');
-
             wait until rising_edge(clk_ext);
             wait for 8 * CLK_PERIOD;
             testing <= false;
