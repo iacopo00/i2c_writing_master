@@ -86,11 +86,3 @@ The design was synthesized and implemented using **Vivado** in out-of-context mo
 ### Power Consumption
 - **Total On-Chip Power**: 0.091 W (99% static, 1% dynamic)
 - Extremely power-efficient design suitable for embedded applications
-
----
-
-## License
-
-This project was developed for educational purposes at the University.
-
----
